@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>reveal.js</title>
+		<title>Bien réussir un merge avec Git</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -24,8 +24,589 @@
 	<body>
 		<div class="reveal">
 			<div class="slides">
-				<section>Slide 1</section>
-				<section>Slide 2</section>
+				<section>
+					<h1>Bien réussir un merge avec Git</h1>
+					<p>Alexandre Garnier <a href="http://twitter.com/zigarn">@zigarn</a></p>
+				</section>
+				<section>
+					<h2>Git, les merges et vous</h2>
+					<p class="fragment">Qui n'a jamais utilisé Git ?</p>
+					<p class="fragment">Qui n'a jamais fait de merge ?</p>
+					<p class="fragment">Qui n'a jamais eu de problème de merge ?</p>
+				</section>
+				<section>
+					<h2>Mise en place de l'environnement</h2>
+					<ol>
+						<li class="fragment">Installer Git (si ce n'est pas déjà fait)</li>
+						<li class="fragment">
+							Cloner le projet de travail :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git clone https://bitbucket.org/zigarn/git-merge-workshop-workspace.git
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Rentrer dans le dossier :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+cd git-merge-workshop-workspace
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Lancer le projet :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+./run.sh
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Avant de démarrer un merge</h2>
+					<h4 class="fragment">Faire place nette !</h4>
+					<pre class="fragment" style="width: 100%"><code class="sh" data-trim contenteditable>
+git status
+git stash --include-untracked
+					</code></pre>
+				</section>
+				<section>
+					<h2>Qu'est-ce qu'un merge ?</h2>
+					<p>On peut simplement voir ça simplement comme la fusion du contenu d'un dossier dans un autre.</p>
+					<img src="assets/merge_folder.png" class="fragment" />
+				</section>
+				<section>
+					<h2>Mais avec Git ?</h2>
+					<p class="fragment">Ben c'est pareil : simplement la fusion du contenu d'une branche dans celui d'une autre.</p>
+					<p class="fragment">Avec en plus enregistrement du point de fusion.</p>
+					<img src="assets/dag_merge.svg" class="fragment" />
+				</section>
+				<section>
+					<h2>Un merge simple</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-A-1
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le contenu</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge origin/branch-A-2
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le résultat</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Bilan</h2>
+					<ul>
+						<li class="fragment">Tout s'est bien passé !</li>
+						<li class="fragment">
+							Git fait automatiquement le commit du résultat du merge.
+							<div class="fragment">
+								On peut éviter ce comportement avec l'option <code class="sh">--no-commit</code>
+								<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git reset --hard HEAD@{1} # Rembobiner avant le merge
+git merge --no-commit origin/branch-A-2
+git status
+git diff --cached
+git commit
+								</code></pre>
+							</div>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Alors pourquoi avoir peur du merge ?</h2>
+					<p class="fragment">Parce que ça provoque des <strong>conflits</strong> !</p>
+					<img src="assets/merge_file.png" class="fragment" />
+					<p class="fragment">Mais en vrai beaucoup moins souvent qu'on ne se l'imagine.</p>
+				</section>
+				<section>
+					<h2>Un merge moins simple</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-B-1
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le contenu</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --no-commit origin/branch-B-2
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Observer le résultat et commiter :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git status
+git diff --cached
+git commit
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Bilan</h2>
+					<ul>
+					<li class="fragment">Tout s'est encore bien passé !</li>
+					<li class="fragment">
+						Et pourtant on a modifié le même fichier.
+						<div class="fragment">
+							<p>Chaque modification possède un contexte.</p>
+							<p>Si les contextes sont disjoints, il n'y a pas de conflit.</p>
+							<table>
+								<tr>
+									<td>
+										<pre style="width: 100%"><code class="diff" data-trim contenteditable>
+--- a/run.sh
++++ b/run.sh
+@@ -2,7 +2,7 @@
+
+ echo "Hello World 1!"
+ echo "Hello World 2!"
+-echo "Hello World 3!"
++echo "Hello everybody!"
+ echo "Hello World 4!"
+ echo "Hello World 5!"
+ echo "Hello World 6!"
+										</code></pre>
+									</td>
+									<td>
+										<pre style="width: 100%"><code class="diff" data-trim contenteditable>
+--- a/run.sh
++++ b/run.sh
+@@ -17,6 +17,6 @@
+ echo "Hello World 15!"
+ echo "Hello World 16!"
+ echo "Hello World 17!"
+-echo "Hello World 18!"
++echo "Hello nobody!"
+ echo "Hello World 19!"
+ echo "Hello World 20!"
+										</code></pre>
+									</td>
+								</tr>
+							</table>
+					</div>
+				</section>
+				<section>
+					<h2>Un <em>"vrai"</em> merge</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-C-1
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le contenu</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --no-commit origin/branch-C-2
+							</code></pre>
+							<div class="fragment">Enfin un conflit !</div>
+						</li>
+						<li class="fragment">
+							Observer le résultat :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git status
+cat run.sh
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Un peu de théorie</h2>
+					<ul>
+						<li class="fragment">Un merge est la réconciliation de 2 évolutions parallèles.</li>
+						<li class="fragment">Ces 2 évolutions ont un <strong>ancêtre commun</strong>.</li>
+						<li class="fragment">Cet ancêtre commun est souvent appelé la <strong>BASE</strong>.</li>
+						<li class="fragment">Le résultat des évolutions dans les 2 branches sont appelées <strong>OURS</strong> et <strong>THEIRS</strong>.</li>
+						<!-- TODO : graphe ancêtre commun -->
+					<ul>
+				</section>
+				<section>
+					<h2>En termes Git</h2>
+					<dl>
+						<dt class="fragment">OURS</dt>
+						<dd class="fragment">Notre branche courante <code>branch-C-1</code> ou <code>HEAD</code></dd>
+						<dt class="fragment">THEIRS</dt>
+						<dd class="fragment">La branche à merger <code>origin/branch-C-2</code> ou <code>MERGE_HEAD</code></dd>
+						<dt class="fragment">BASE</dt>
+						<dd class="fragment">
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge-base branch-C-1 origin/branch-C-2
+# Ou plus joliment
+git describe --all --always $(git merge-base branch-C-1 origin/branch-C-2)
+							</code></pre>
+						</dd>
+					</dl>
+				</section>
+				<section>
+					<h2>Voir les évolutions dans chaque branche</h2>
+					<ul>
+						<li class="fragment">
+							Évolutions entre <em>BASE</em> et <em>OURS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git diff $(git merge-base branch-C-1 origin/branch-C-2)..branch-C-1
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Évolutions entre <em>BASE</em> et <em>THEIRS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git diff $(git merge-base branch-C-1 origin/branch-C-2)..origin/branch-C-2
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Voir le contenu dans chaque branche</h2>
+					<p class="fragment">Git donne accès au contenu en conflit dans chaque branche.</p>
+					<ul>
+						<li class="fragment">
+							Contenu dans <em>BASE</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git show :1:run.sh
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Contenu dans <em>OURS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git show :2:run.sh
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Contenu dans <em>THEIRS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git show :3:run.sh
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Marqueurs de conflit</h2>
+					<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+#!/bin/sh
+
+<<<<<<< HEAD
+echo "Hello World from branch-C-1!"
+=======
+echo "Hello World from branch-C-2!"
+>>>>>>> branch-C-2
+					</code></pre>
+					<ul>
+						<li class="fragment">
+							Le contenu en conflit dans <em>OURS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+<<<<<<< HEAD
+echo "Hello World from branch-C-1!"
+=======
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Le contenu en conflit dans <em>THEIRS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+=======
+echo "Hello World from branch-C-2!"
+>>>>>>> branch-C-2
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Marqueurs de conflit <code>diff3</code></h2>
+					<ol>
+						<li class="fragment">
+							Annuler le merge :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --abort
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Configurer des marqueurs de diff en mode <code>diff3</code> :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git config --local merge.conflictStyle diff3
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Relancer le merge :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge origin/branch-C-2
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Marqueurs de conflit <code>diff3</code> (suite)</h2>
+					<ul>
+						<li class="fragment">
+							Le contenu en conflit dans <em>OURS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+<<<<<<< HEAD
+echo "Hello World from branch-C-1!"
+||||||| merged common ancestors
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Le contenu en conflit dans <em>BASE</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+||||||| merged common ancestors
+echo "Hello World!"
+=======
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Le contenu en conflit  dans <em>THEIRS</em>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+=======
+echo "Hello World from branch-C-2!"
+>>>>>>> branch-C-2
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Résoudre le conflit (enfin)</h2>
+					<ol>
+						<li class="fragment">
+							Simplement éditer les fichiers en conflit et choisir le contenu resultant du merge :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+#!/bin/sh
+
+echo "Hello World from both branch-C-1 and branch-C-2!"
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Indiquer le conflit comme résolu en l'indexant :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git add run.sh
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Commiter :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git commit
+							</code></pre>
+						</li>
+					</ol>
+					<h3 class="fragment">Et voilà !</h3>
+				</section>
+				<section>
+					<h2>Utiliser un outil de résolution externe</h2>
+					<ul>
+						<li class="fragment">Git permet d'utiliser un <em>mergetool</em> pour nous aider à résoudre les conflits.</li>
+						<li class="fragment">Mon préféré est <a href="http://kdiff3.sourceforge.net/">kdiff3</a> car multi-plateforme et en style <code>diff3</code>.</li>
+						<li class="fragment">Mais il en existe un grand nombre de préconfigurés (emerge, meld, p4merge, tortoisemerge, vimdiff, winmerge, ...).</li>
+						<li class="fragment">Vous pouvez même en configurer un nouveau avec <code>mergetool.&lt;tool&gt;.cmd</code></li>
+					</ul>
+				</section>
+				<section>
+					<h2>Utilisation du mergetool</h2>
+					<ol>
+						<li class="fragment">
+							Rembobiner avant le merge :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git reset --hard HEAD@{1}
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Configurer kdiff3 en mergetool :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git config --local merge.tool kdiff3
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Relancer le merge :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge origin/branch-C-2
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Résoudre les conflits :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git mergetool
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Mergetool avec kdiff3</h2>
+					<img src="assets/mergetool_kdiff3.png" />
+				</section>
+				<section>
+					<h2>Mergetool et <code>.orig</code></h2>
+					<ul>
+						<li class="fragment">L'utilisation de mergetool provoque la création de fichiers en <code>.orig</code>.</li>
+						<li class="fragment">Ce sont tout simplement des sauvegardes du fichier avec les marqueurs de conflit afin de pouvoir reprendre la résolution.</li>
+						<li class="fragment">
+							Il est possible de simplement les ignorer :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+echo '*.orig' >> .git/info/exclude
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>D'ailleurs, si je me suis trompé dans la résolution de mon merge ?</h2>
+					<ol>
+						<li class="fragment">
+							Simplement re-merger un fichier pour revenir au marqueurs de conflit :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout -m run.sh
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Résoudre de nouveau le conflit, l'indéxer et committer :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+vi run.sh
+git add run.sh
+git commit
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Types de conflit</h2>
+					<ul>
+						<li class="fragment"><code>both modified</code> : le plus classique</li>
+						<li class="fragment"><code>deleted by them/us</code> : modification sur une branche et suppression sur l'autre</li>
+						<li class="fragment"><code>both added</code> : ajout avec contenu différent sur chaque branche</li>
+						<li class="fragment">autres, mais vraiment ésotériques</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Types de conflit</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-D-1
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le contenu</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --no-commit origin/branch-D-2
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Observer le résultat, résoudre les conflits et commiter :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git status
+# solve conflicts
+git add --update
+git commit
+							</code></pre>
+						</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Merge fast-forward</h2>
+					<p class="fragment">Dans le cas où <em>OURS</em>==<em>BASE</em></p>
+					<ul>
+						<li class="fragment">Il n'y a pas de divergences, de modifications concurrentes</li>
+						<li class="fragment">Git le détecte</li>
+						<li class="fragment">
+							Il va simplement déplacer <em>OURS</em> sur <em>THEIRS</em>
+							<img src="assets/fast-forward.svg" class="fragment" />
+						</li>
+						<li class="fragment">Mais on peut forcer la création d'un commit de merge avec l'option <code>--no-ff</code></li>
+					</ul>
+				</section>
+				<section>
+					<h2>Merge fast-forward (suite)</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-E-1
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge origin/branch-E-2
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le résultat</li>
+						<li class="fragment">
+							Rembobiner :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git reset --hard HEAD@{1}
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Y merger une branche en <code>--no-ff</code>:
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --no-ff origin/branch-E-2
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le résultat</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Pas de conflit != pas de problème</h2>
+					<ul>
+						<li class="fragment">
+							Il peut y avoir des conflits "fonctionnels"
+							<div class="fragment">
+								Par exemple : appel à une méthode sur une branche et suppression de cette méthode sur une autre.<br/>
+								On touche à 2 zones non conflictuelles mais pourtant plus rien de fonctionne !
+							</div>
+						</li>
+						<li class="fragment">Il peut y avoir d'autres types de problèmes par la résolution automatique des merges</li>
+						<li class="fragment">
+							<strong>C'est pourquoi il faut toujours vérifier le résultat d'un merge</strong>
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git diff HEAD^..HEAD # Regarder que le diff semble correct
+./launch_tests.sh # Lancer sa suite de tests
+							</code></pre>
+						</li>
+					</ul>
+				</section>
+				<section>
+					<h2>Merge problématique sans conflit</h2>
+					<ol>
+						<li class="fragment">
+							Se positionner sur la branche cible :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git checkout branch-F-1
+							</code></pre>
+						</li>
+						<li class="fragment">
+							Y merger une branche :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+git merge --no-commit origin/branch-F-2
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le résultat</li>
+						<li class="fragment">
+							Lancer le projet :
+							<pre style="width: 100%"><code class="sh" data-trim contenteditable>
+./run.sh
+							</code></pre>
+						</li>
+						<li class="fragment">Observer le résultat</li>
+					</ol>
+				</section>
+				<section>
+					<h2>Conclusion</h2>
+					<p class="fragment">J'espère que vous avez moins peur des merges</p>
+					<div class="fragment">
+						<p>Pour retenir et/ou aller plus loin</p>
+						<ul>
+							<li><a href="https://git-scm.com/docs/git-merge">La documentation de <code>git merge</code></a></li>
+							<li><a href="https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging#Basic-Merging">ProGit</a></li>
+							<li><a href="https://www.atlassian.com/git/tutorials/using-branches/git-merge">Le tutorial Atlassian</a></li>
+							<li><a href="https://github.com/mhagger/git-imerge">git-imerge : Incremental merge for git</a></li>
+						</ul>
+					</div>
+					<h4 class="fragment">Merci</h4>
+					</div>
+				</section>
 			</div>
 		</div>
 
